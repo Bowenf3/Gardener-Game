@@ -12,15 +12,16 @@ let circle = {
 };
  
 class Square {
-  constructor(name, r, b, g, x, y, h, w) {
-    this.name = name;
-    this.r = r;
-    this.b = b;
-    this.g = g;
-    this.x = x;
-    this.y = y;
-    this.h = h;
-    this.w = w;
+  constructor(iName, colour, postitionAndSize) {
+    console.log(postitionAndSize)
+    this.name = iName;
+    this.r = colour.r;
+    this.b = colour.b;
+    this.g = colour.g;
+    this.x = postitionAndSize.xPos;
+    this.y = postitionAndSize.yPos;
+    this.h = postitionAndSize.hSize;
+    this.w = postitionAndSize.wSize;
   }
 }
  
@@ -30,34 +31,53 @@ let score = 0
  
 function addNewPlant(name) {
   // Add new plant
-  const plant = new Square(`plant-${plants.length + 1}`, random(0, 255), random(0, 255), random(0, 255), random(0, 400), 800, 800, 30)
+  const plant = new Square(
+    `plant-${plants.length + 1}`,
+    { r: random(0, 255), g: random(0, 255), b: random(0, 255) },
+    { xPos: random(0, windowWidth), yPos: windowHeight + 10, hSize: windowHeight * 1.1, wSize: 30 },
+  )
   plants = plants.concat([plant])
 }
- 
+
 function setup() {
-  createCanvas(400, 400)
+  createCanvas(windowWidth, windowHeight)
 }
- 
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight)
+}
+
+const scoreThreshold = 10
+
 function draw() {
   // Draw background
   background(250)
   fill(150, 75, 0)
-  rect(0, 400, 800, 50)
-  text("Score = " + score, 330, 20)
- 
+  rectMode(CORNER)
+  rect(0, windowHeight * 7/8, windowWidth, windowHeight/8)
+  text(`Score = ${score}`, windowWidth * 1/8, windowHeight * 1/10)
+  
+  
+  // Determine the required plans based on the current score, the threshold and how many plans are currently alive
+  const requiredPlants = Math.floor(score / scoreThreshold) + 1
+
   // Add new plant if needed
-  if (plants.length === 0) {
-    addNewPlant()
+  if (plants.length < requiredPlants) {
+    const plantsToAdd = requiredPlants - plants.length
+    for (let counter = 0; counter < plantsToAdd; counter++) {
+      addNewPlant()
+    }
   }
+
   // Draw all plants
   plants.forEach(plant => {
-    rectMode(CENTER)
+    // rectMode(CENTER)
     fill(plant.r, plant.b, plant.g, plant.t)
     rect(plant.x, plant.y, plant.w, plant.h)
-    plant.y = plant.y - 3
+    plant.y = plant.y - random(0,3)
  
     // Reset game if a plant has reached the top
-    if (plant.y < 380) {
+    if (plant.y < 0) {
       plants = []
       score = 0;
     }
@@ -71,18 +91,15 @@ function draw() {
 }
  
 function mouseClicked() {
-  plants.forEach(plant => {
-      if ((mouseX <= plant.x + (plant.w / 2)) &&
-        (mouseX >= plant.x - (plant.w / 2)) &&
-        (mouseY <= plant.y + (plant.h / 2)) &&
-        (mouseY >= plant.y - (plant.h / 2))
-      ) {
-        // Remove plant from the array
-        const plantIndex = plants.indexOf(plant)
-        if (plantIndex > -1) {
-          plants.splice(plantIndex, 1);
-        }
-        score++;
-      }
-    })
-  }
+  plants.forEach((plant, plantIndex) => {
+    if ((mouseX <= plant.x + (plant.w / 2)) &&
+      (mouseX >= plant.x - (plant.w / 2)) &&
+      (mouseY <= plant.y + (plant.h / 2)) &&
+      (mouseY >= plant.y - (plant.h / 2))
+    ) {
+      // Remove plant from the array
+      plants.splice(plantIndex, 1);
+      score++;
+    }
+  })
+}
