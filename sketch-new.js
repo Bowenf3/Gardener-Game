@@ -13,7 +13,6 @@ let circle = {
  
 class Square {
   constructor(iName, colour, postitionAndSize) {
-    console.log(postitionAndSize)
     this.name = iName;
     this.r = colour.r;
     this.b = colour.b;
@@ -28,13 +27,15 @@ class Square {
 // List of plans currently in the world
 let plants = []
 let score = 0
+
+const plantWidth = 30
  
 function addNewPlant(name) {
   // Add new plant
   const plant = new Square(
     `plant-${plants.length + 1}`,
     { r: random(0, 255), g: random(0, 255), b: random(0, 255) },
-    { xPos: random(0, windowWidth), yPos: windowHeight + 10, hSize: windowHeight * 1.1, wSize: 30 },
+    { xPos: random(0, windowWidth - plantWidth), yPos: windowHeight + 10, hSize: windowHeight * 1.1, wSize: plantWidth },
   )
   plants = plants.concat([plant])
 }
@@ -71,7 +72,6 @@ function draw() {
 
   // Draw all plants
   plants.forEach(plant => {
-    // rectMode(CENTER)
     fill(plant.r, plant.b, plant.g, plant.t)
     rect(plant.x, plant.y, plant.w, plant.h)
     plant.y = plant.y - random(0,3)
@@ -91,12 +91,17 @@ function draw() {
 }
  
 function mouseClicked() {
-  plants.forEach((plant, plantIndex) => {
-    if ((mouseX <= plant.x + (plant.w / 2)) &&
-      (mouseX >= plant.x - (plant.w / 2)) &&
-      (mouseY <= plant.y + (plant.h / 2)) &&
-      (mouseY >= plant.y - (plant.h / 2))
+  console.log('mouse clicked', plants)
+  plants.forEach((plant, plantIndex) => {    
+    if (
+      // Below top left corner
+      (mouseY >= plant.y) &&
+      // On the right of the left corner
+      (mouseX >= plant.x) &&
+      // Inside the width of the plant
+      (mouseX <= plant.x + plant.w)
     ) {
+      console.log(plantIndex)
       // Remove plant from the array
       plants.splice(plantIndex, 1);
       score++;
